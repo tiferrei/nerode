@@ -1,55 +1,148 @@
-type symbol = int
+module type A = sig
+  type s
+  type r
+  type t
+  val size : t -> int
+  val compare : r -> r -> int
+  val to_list : t -> s list
+  val of_list : s list -> t
+  val of_seq : s Seq.t -> t
+  val reps : t -> r list
+  val iter : (r -> unit) -> t -> unit
+  val fold : ('a -> r -> 'a) -> 'a -> t -> 'a
+  val map : (r -> 'a) -> t -> 'a list
+  val sym_of_rep : t -> r -> s
+  val sym_to_rep : t -> s -> r
+  val rep_to_string : t -> r -> string
+  val of_json : Yojson.Basic.t -> t
+  val to_json : t -> Yojson.Basic.t
+  val to_string : t -> string
 
-(** Under this reperesentation, each symbol is an index into the
-    array of strings. For example if our alphabet is [| "a" ; "b" |] then
-    the list of symbols will be [0; 1]. *)
-type t = string array
+  type wildchar = Wildcard | Letter of r
+  type wildstring = wildchar list
 
-let intalph (n: int) : t = List.map string_of_int (List.init n Fun.id) |> Array.of_list
+(** Form a list of words from a wildstring. A wildstring corresponds to a list
+    of alphabet symbols or a wildcard. That is, for example, for the alphabet
+    \{"0", "1"\}, [parse_wildstring alphabet [[0; Wildcard]] converts to the words
+    [[0;0]] and [[0;1]]. *)
+  val parse_wildstring : t -> wildstring -> r list list
+end
 
-let size = Array.length
+module type Symbol = sig
+  type t
+  val compare: t -> t -> int
+  val to_string: t -> string
+  val of_string: string -> t
+  val of_json: Yojson.Basic.t -> t
+  val to_json: t -> Yojson.Basic.t
+  val of_sexp : Core.Sexp.t -> t
+  val to_sexp : t -> Core.Sexp.t
+end
 
-let of_string_array (a: string array) = a
-
-let compare = Stdlib.compare
-
-let symbols (t:t) = List.init (Array.length t) Fun.id
-
-let iter (f:symbol->unit) (t:t) = List.iter f (symbols t)
-
-let fold (f:'a->symbol->'a) (a:'a) (t:t) = List.fold_left f a (symbols t)
-
-let map (f:symbol->'a) (t:t) = List.map f (symbols t)
-
-let sym_of_sexp = Core.Int.t_of_sexp
-let sexp_of_sym = Core.Int.sexp_of_t
-
-let sym_of_json = function
-  | `Int i -> i
-  | `String s -> int_of_string s
-  | _ -> failwith "invalid json format"
-
-let sym_to_json i = `Int i
-
-let of_json = function
-  | `List lst -> List.map (fun j -> 
-    match j with
-    | `String s -> s
-    | _ -> failwith "Alphabet symbols must be strings") lst |> Array.of_list
-  | _ -> failwith "Alphabet must be a json list"
-
-let to_json (a:t) = 
-  let lst = Array.to_list a |> List.map (fun s -> `String s) in
-  `List lst
-
-let sym_to_string t x = t.(x)
-
-let to_string t =
-  Array.to_list t |> String.concat " "
+module Make (S : Symbol) : A with type s = S.t and type r = int = struct
+  type s = S.t
+  type r = int
+  type t = s array
   
-let sym_of_int = Fun.id
-let sym_to_int = Fun.id
+  let size = Array.length
 
-let w_of_ints (lst: int list) = lst
+  let compare = Int.compare
 
+  let to_list = Array.to_list
 
+  let of_list = Array.of_list
+
+  let of_seq = Array.of_seq
+
+  let reps t = Seq.ints 0 |> Seq.take (size t) |> List.of_seq
+
+  let iter f t = List.iter f (reps t)
+
+  let fold f a t = List.fold_left f a (reps t)
+
+  let map f t = List.map f (reps t)
+
+  let sym_of_rep t r = t.(r)
+
+  let sym_to_rep t s =
+    (* TODO: Memoize. *)
+    let mtch = fun x -> S.compare s x == 0 in
+    let search = Array.find_index mtch t in
+    Option.get search
+
+  let rep_to_string t r = (sym_of_rep t r) |> S.to_string
+
+  let of_json = function
+    | `List lst -> List.map S.of_json lst |> Array.of_list
+    | _ -> failwith "Alphabet must be a JSON list"
+  let to_json (a: t) = 
+    let lst = to_list a |> List.map (fun s -> `String (S.to_string s)) in
+    `List lst
+  let to_string t =
+    to_list t |> List.map S.to_string |> String.concat " "
+
+  type wildchar = Wildcard | Letter of r
+  type wildstring = wildchar list
+
+  let parse_wildstring (alpha: t) (s: wildstring) =
+    let rec consume rem acc =
+      match rem with
+      | [] -> acc
+      | Letter l :: tl -> consume tl (List.map (fun w -> l :: w) acc)
+      | Wildcard :: tl -> consume tl (List.fold_left (fun a2 w -> 
+        List.fold_left (fun a3 x -> (x::w)::a3) a2 (reps alpha)) [] acc)
+    in
+    consume (List.rev s) [[]]
+end
+
+module MakeDirect (S : Symbol) : A with type s = S.t and type r = S.t = struct
+  type s = S.t
+  type r = S.t
+  type t = s array
+  
+  let size = Array.length
+
+  let compare = S.compare
+
+  let to_list = Array.to_list
+
+  let of_list = Array.of_list
+
+  let of_seq = Array.of_seq
+
+  let reps = to_list
+
+  let iter f t = List.iter f (reps t)
+
+  let fold f a t = List.fold_left f a (reps t)
+
+  let map f t = List.map f (reps t)
+
+  let sym_of_rep t r = r
+
+  let sym_to_rep t s = s
+
+  let rep_to_string t r = S.to_string r
+
+  let of_json = function
+    | `List lst -> List.map S.of_json lst |> Array.of_list
+    | _ -> failwith "Alphabet must be a JSON list"
+  let to_json (a: t) = 
+    let lst = to_list a |> List.map (fun s -> `String (S.to_string s)) in
+    `List lst
+  let to_string t =
+    to_list t |> List.map S.to_string |> String.concat " "
+
+  type wildchar = Wildcard | Letter of r
+  type wildstring = wildchar list
+
+  let parse_wildstring (alpha: t) (s: wildstring) =
+    let rec consume rem acc =
+      match rem with
+      | [] -> acc
+      | Letter l :: tl -> consume tl (List.map (fun w -> l :: w) acc)
+      | Wildcard :: tl -> consume tl (List.fold_left (fun a2 w -> 
+        List.fold_left (fun a3 x -> (x::w)::a3) a2 (reps alpha)) [] acc)
+    in
+    consume (List.rev s) [[]]
+end

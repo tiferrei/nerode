@@ -1,68 +1,97 @@
 (** Represents a finite alphabet of symbols. *)
 
-(** A single symbol in an alphabet. *)
-type symbol
+module type A = sig
+  (** A single symbol in an alphabet. *)
+  type s
 
-(** An alphabet: a finite collection of symbols. *)
-type t
+  (** A (usually more memory-efficient) representative of a symbol in the alphabet. *)
+  type r
 
-(** [intalph k] returns an alphabet containing the symbols \{0, 1, ..., k-1\},
-    with string representations "0", "1", ... *)
-val intalph : int -> t
+  (** An alphabet: a finite collection of symbols. *)
+  type t
 
-(** [size alpha] returns the size of [alpha] *)
-val size : t -> int
+  (** [size alpha] returns the size of [alpha] *)
+  val size : t -> int
 
-(** [of_string_array a] constructs an alphabet with symbols corresponding to the
-    strings in [a]. *)
-val of_string_array : string array -> t
-
-(** [compare x y] returns a number greater than 0 if x is greater than y, 0 if
+  (** [compare x y] returns a number greater than 0 if x is greater than y, 0 if
   x = y,  and less than 0 if x is less than y. *)
-val compare : symbol -> symbol -> int
+    val compare : r -> r -> int
 
-(** [symbols  alpha] returns a list of the symbols in this alphabet. *)
-val symbols : t -> symbol list
+  (** [to_list alpha] returns a list of the symbols in this alphabet. *)
+  val to_list : t -> s list
 
-(** [iter f alpha] performs [f x] for each symbol [x] in [alpha]. *)
-val iter : (symbol->unit) -> t -> unit
+  (** [of_list lst] returns an alphabet containing the symbols in the given list. *)
+  val of_list : s list -> t
 
-(** [fold f init alpha] folds the function [f] over [alpha], i.e.,
-    returning [f ( f init x1 ) x2 ...] for all the symbols [x1, x2, ...] in [alpha]. *)
-val fold :  ('a->symbol->'a) -> 'a -> t -> 'a
+  (** [of_seq seq] returns an alphabet containing the symbols in the given sequence. *)
+  val of_seq : s Seq.t -> t
 
-(** [map f alpha] returns a list [[f x1, f x2, ...]] for the symbols
+  (** [toreps_list alpha] returns a list of the representatives in this alphabet. *)
+  val reps : t -> r list
+
+  (** [iter f alpha] performs [f x] for each representative [x] in [alpha]. *)
+  val iter : (r -> unit) -> t -> unit
+
+  (** [fold f init alpha] folds left the function [f] over [alpha], i.e.,
+    returning [f ( f init x1 ) x2 ...] for all the representatives [x1, x2, ...] in [alpha]. *)
+  val fold : ('a -> r -> 'a) -> 'a -> t -> 'a
+
+  (** [map f alpha] returns a list [[f x1, f x2, ...]] for the representatives
     [x1, x2, ...] in [alpha]. *)
-val map : (symbol->'a) -> t -> 'a list
+  val map : (r -> 'a) -> t -> 'a list
 
+  (** Return the symbol being represented *)
+  val sym_of_rep : t -> r -> s
 
-(** Serialize to S-Expression. *)
-val sym_of_sexp : Core.Sexp.t -> symbol
+  (** Return the representative of the symbol *)
+  val sym_to_rep : t -> s -> r
 
-(** Deserialize from S-Expression. *)
-val sexp_of_sym : symbol -> Core.Sexp.t
+  (** Return the string representation of a representative in the alphabet *)
+  val rep_to_string : t -> r -> string
 
-(** Serialize symbol to JSON. *)
-val sym_of_json : Yojson.Basic.t -> symbol
+  (** Deserialize alphabet from JSON. *)
+  val of_json : Yojson.Basic.t -> t
 
-(** Deserialize symbol from JSON. *)
-val sym_to_json : symbol -> Yojson.Basic.t
+  (** Serialize alphabet to JSON. *)
+  val to_json : t -> Yojson.Basic.t
 
-(** Serialize alphabet to JSON. *)
-val of_json : Yojson.Basic.t -> t
+  (** Convert an alphabet to its string representation. *)
+  val to_string : t -> string
 
-(** Deserialize alphabet from JSON. *)
-val to_json : t -> Yojson.Basic.t
+  type wildchar = Wildcard | Letter of r
+  type wildstring = wildchar list
 
-(** Convert a symbol to its string representation. *)
-val sym_to_string : t -> symbol -> string
+  val parse_wildstring : t -> wildstring -> r list list
+end
 
-(** Convert an alphabet to its string representation. *)
-val to_string : t -> string
+module type Symbol = sig
+  (** A single symbol. *)
+  type t
 
-(** Convert (injectively) a symbol to an integer. *)
-val sym_to_int : symbol -> int
+  (** Standard [compare] operation *)
+  val compare: t -> t -> int
 
-(** Convert an integer to a symbol. It is an error to convert an integer greater
-    than or equal to the size of the alphabet. *)
-val sym_of_int : int -> symbol
+  (** Converts a symbol to its string representation. *)
+  val to_string: t -> string
+
+  (** Parses a symbol from its string representation. *)
+  val of_string: string -> t
+
+  (** Deserializes a symbol from JSON. *)
+  val of_json: Yojson.Basic.t -> t
+
+  (** Serializes a symbol to JSON. *)
+  val to_json: t -> Yojson.Basic.t
+
+  (** Deserializes a symbol from an S-Expression. *)
+  val of_sexp : Core.Sexp.t -> t
+
+  (** Serializes a symbol to an S-Expression. *)
+  val to_sexp : t -> Core.Sexp.t
+end
+
+(* Make a [Symbol] alphabet backed by [int] representatives. *)
+module Make : functor (S : Symbol) -> A with type s = S.t and type r = int
+
+(* Make a [Symbol] alphabet backed directly by [Symbol] representatives. *)
+module MakeDirect : functor (S : Symbol) -> A with type s = S.t and type r = S.t
