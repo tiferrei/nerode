@@ -1,6 +1,6 @@
 (** Representation of a Deterministic Finite Automaton (DFA) *)
 
-type symbol = Alphabet.symbol
+type symbol = StringAlphabet.r
 type word = Word.t
 
 (** DFA type. *)
@@ -31,7 +31,7 @@ type 'a regular = { eq: 'a -> 'a -> bool;
 
 (** Construct a DFA by derivation outwards from a start state.
     Generalizes (Owens, Reppy, Turon; JFP 2009) approach for Rx->Dfa conversion. *)
-val mk_dfa : 'a regular -> Alphabet.t -> 'a -> t
+val mk_dfa : 'a regular -> StringAlphabet.t -> 'a -> t
 
 (** Perform comparison on states. *)
 val compare_states : state -> state -> int
@@ -40,7 +40,7 @@ val compare_states : state -> state -> int
 val size : t -> int
 
 (** Return the alphabet of the DFA. *)
-val get_alpha : t -> Alphabet.t
+val get_alpha : t -> StringAlphabet.t
 
 (** Return the start state. *)
 val get_start : t -> state
@@ -94,7 +94,7 @@ val minimize : t -> t
 (** Construct a DFA from a Regular Expression. An alphabet is required since a Regular Expression
     need not contain all symbols from its alphabet, but a DFA does need to
     define transitions for all symbols. *)
-val of_rx : Alphabet.t -> Rx.t -> t
+val of_rx : StringAlphabet.t -> Rx.t -> t
 
 (** Construct a Regular Expression representing the language of the DFA. *)
 val to_rx : t -> Rx.t

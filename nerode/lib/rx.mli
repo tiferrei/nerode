@@ -1,11 +1,9 @@
 (** Representation of a Regular expression. *)
 
-open Alphabet
-
 type t =
   | Empty
   | Epsilon
-  | Char of symbol
+  | Char of StringAlphabet.r
   | Seq of t list
   | Union of t list
   | Star of t
@@ -60,7 +58,7 @@ val neg : t -> t
 val difference : t -> t -> t
 
 (** Return the string representation of a regular expression. *)
-val to_string : Alphabet.t -> t -> string
+val to_string : StringAlphabet.t -> t -> string
 
 (** Given a word [w], construct a regular expression for [{w}]. *)
 val of_word : Word.t -> t
@@ -69,4 +67,4 @@ val of_word : Word.t -> t
 val e : t -> bool
 
 (** Syntatic Brzozowski derivative *)
-val d : symbol -> t -> t
+val d : StringAlphabet.r -> t -> t

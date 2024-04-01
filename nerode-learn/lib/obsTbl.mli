@@ -108,7 +108,7 @@ val fill_blanks : t -> entry Map.Make(Word).t -> t
     function [get_entry],
 mapping words to their corresponding entry, returning 1) a 1x1 table with row ε
 and column ε, thus having one entry corresponding the string ε in the upper part*)
-val init_epsilon : Alphabet.t -> (Word.t -> entry) -> t * (entry WordMap.t)
+val init_epsilon : StringAlphabet.t -> (Word.t -> entry) -> t * (entry WordMap.t)
 
 (** [print_table t] prints the table [t]:
 The column labels are in the horizontal axis in lexicographic order.

@@ -1,8 +1,8 @@
-type symbol = Alphabet.symbol
+type symbol = StringAlphabet.r
 type word = Word.t
 
 type t = {
-  alpha: Alphabet.t;
+  alpha: StringAlphabet.t;
   trans: int array array; (* start state is 0. 1st dim: states, 2nd dim: symbols *)
   final: bool array
 }
@@ -23,7 +23,7 @@ let idx (eq: 'a -> 'a -> bool) (lst: 'a list) (q: 'a) =
     | x::tail -> if eq x q then i else idxr eq tail q (i+1) in
   idxr eq lst q 0
 
-let rec dfa_goto (alpha: Alphabet.t) (r: 'a regular) (q: 'a) (c: symbol)
+let rec dfa_goto (alpha: StringAlphabet.t) (r: 'a regular) (q: 'a) (c: symbol)
                  (states: 'a list) (delta: ('a trans) list) =
   let qc = r.d c q in
   if List.exists (r.eq qc) states then
@@ -32,17 +32,17 @@ let rec dfa_goto (alpha: Alphabet.t) (r: 'a regular) (q: 'a) (c: symbol)
     (* Add qc _second_ to maintain the invariant that 0 is the start state *)
     dfa_explore alpha r ((List.hd states)::qc::(List.tl states)) ((q, c, qc)::delta) qc
 
-and dfa_explore (alpha: Alphabet.t) (r: 'a regular)
+and dfa_explore (alpha: StringAlphabet.t) (r: 'a regular)
                 (states: 'a list) (delta: ('a trans) list) (q: 'a) = 
-  Alphabet.fold (fun (s,d) c -> (dfa_goto alpha r q c s d)) (states, delta) alpha
+  StringAlphabet.fold (fun (s,d) c -> (dfa_goto alpha r q c s d)) (states, delta) alpha
 
-let mk_dfa (r: 'a regular) (alpha: Alphabet.t) (start:'a) : t =
-  let m = Alphabet.size alpha in
+let mk_dfa (r: 'a regular) (alpha: StringAlphabet.t) (start:'a) : t =
+  let m = StringAlphabet.size alpha in
   let (states, trans) = dfa_explore alpha r [start] [] start in
   let n = List.length states in
   let arr = Array.make_matrix n m 0 in
   let () = List.iter (fun (s1, x, s2) ->
-    arr.(idx r.eq states s1).(Alphabet.sym_to_int x) <- (idx r.eq states s2)) trans in
+    arr.(idx r.eq states s1).(x) <- (idx r.eq states s2)) trans in
   let f = List.map r.e states |> Array.of_list in
   {
     alpha = alpha;
@@ -56,7 +56,7 @@ let get_alpha (dfa: t) = dfa.alpha
 let get_start (dfa: t) = 0
 
 let step (dfa: t) (s: state) (a: symbol) =
-  dfa.trans.(s).(Alphabet.sym_to_int a)
+  dfa.trans.(s).(a)
 
 let steps (dfa: t) (s: state) (w: word) =
   List.fold_left (step dfa) s w
@@ -84,7 +84,7 @@ let rep (d: t) : word =
                        w
                      else
                        let tr = Array.to_list (Array.mapi (fun i s -> 
-                         (Alphabet.sym_of_int i,s)) d.trans.(q)) in
+                         (i,s)) d.trans.(q)) in
                        let next = List.filter_map (fun (a, qa) -> 
                          if StateSet.mem qa v then
                            None
@@ -103,10 +103,10 @@ let print (d: t) =
   let sw = 3 in
   let spacer = String.init sw (fun x -> ' ') in
   let shortline = String.init sw (fun x -> '-') in
-  let a = Alphabet.to_string d.alpha in
+  let a = StringAlphabet.to_string d.alpha in
   let () = Printf.printf "\n%s| %s" spacer a in
   let alen = String.length a in
-  let sym_lens = Alphabet.symbols d.alpha |> List.map (Alphabet.sym_to_string d.alpha) 
+  let sym_lens = StringAlphabet.reps d.alpha |> List.map (StringAlphabet.sym_of_rep d.alpha) 
                  |> List.map String.length |> Array.of_list in
   let longline = String.init (alen+1) (fun x -> '-') in
   let () = Printf.printf "\n%s+%s\n" shortline longline in
@@ -139,7 +139,7 @@ let to_nfa (dfa: t) : IntNfa.t =
   let final = List.filter (fun i -> dfa.final.(i)) (List.init n Fun.id) in
   let trans = Array.fold_left (fun a1 (i,r) ->
     Array.fold_left (fun a2 (j,x) ->
-      (i, Nfa.Char (Alphabet.sym_of_int j), x)::a2
+      (i, Nfa.Char j, x)::a2
     )  a1 (Array.mapi (fun j x -> (j, x)) r)
   ) [] (Array.mapi (fun i r -> (i, r)) dfa.trans) in
   IntNfa.mk_nfa dfa.alpha [0] final trans
@@ -149,7 +149,7 @@ let minimize (dfa: t) : t =
   to_nfa dfa |> IntNfa.reverse |> IntDeterm.determinize
   |>  to_nfa |> IntNfa.reverse |> IntDeterm.determinize
 
-let of_rx (alpha: Alphabet.t) (rx: Rx.t) : t =
+let of_rx (alpha: StringAlphabet.t) (rx: Rx.t) : t =
   mk_dfa {eq = Rx.equiv; d = Rx.d; e = Rx.e} alpha rx
 let to_rx (dfa: t) : Rx.t = to_nfa dfa |> IntNfa.to_rx
 

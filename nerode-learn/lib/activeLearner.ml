@@ -5,5 +5,5 @@ open Nerode
 
 module type ActiveLearner = sig
   type teacher
-  val learn : Alphabet.t -> teacher -> Dfa.t
+  val learn : StringAlphabet.t -> teacher -> Dfa.t
 end

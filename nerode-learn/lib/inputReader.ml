@@ -42,9 +42,9 @@ let load_input fn =
   (* Remove "X" which has special meaning (wildcard) *)
   let a_set' = Set.remove a_set "X" |> Set.elements  in
   let alpha = if List.length a_set' = 0 then 
-                Alphabet.intalph 2
+                StringAlphabet.from_int 2
               else
-                Array.of_list a_set' |> Alphabet.of_string_array in
+                StringAlphabet.of_list a_set' in
 
   let f = Word.words_of_strings alpha in
   (List.concat (List.map ~f p_str),

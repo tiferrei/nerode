@@ -18,7 +18,7 @@ module WLSepPQ = Lstarblanks.Make(TeacherSep)(Worklist.WorklistPQ)
 module KVD = Kv.Make(TeacherLStar)
 
 let kv_from_rx r () =
-  let alpha = Alphabet.intalph 2 in
+  let alpha = StringAlphabet.from_int 2 in
   let teacher = Parser.parse_string r
                 |> Dfa.of_rx alpha
                 |> TeacherLStar.make in
@@ -28,7 +28,7 @@ let kv_from_rx r () =
   Printf.printf "%s\n%!" (Dfa.to_rx d |> Rx.to_string alpha)
 
 let learn_from_sep_rx r1 r2 () =
-  let alpha = Alphabet.intalph 2 in
+  let alpha = StringAlphabet.from_int 2 in
   let rx1 = Parser.parse_string r1 in
   let rx2 = Parser.parse_string r2 in
   let teacher = TeacherSep.make alpha rx1 rx2 in

@@ -39,8 +39,8 @@ arx:
   ;
 
 cx:
-  | n = NUM { Rx.Char (Alphabet.sym_of_int n) }
-  | X { Rx.(union_pair (Char (Alphabet.sym_of_int 0)) (Char (Alphabet.sym_of_int 1))) }
+  | n = NUM { Rx.Char (n) }
+  | X { Rx.(union_pair (Char (0)) (Char (1))) }
   | E { Rx.Epsilon }
   ;
 

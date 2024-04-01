@@ -5,7 +5,7 @@ let () =
   let sysargs = Sys.get_argv () in
   let arg = Array.get sysargs 1 in
   let rx = (Parser.parse_string arg) in
-  let a = Alphabet.intalph 2 in
+  let a = StringAlphabet.from_int 2 in
   begin
     Printf.printf "Your rx: %s\n%!" (Rx.to_string a rx);
 

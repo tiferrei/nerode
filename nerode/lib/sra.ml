@@ -4,7 +4,7 @@ type state = int
 type pred = BA.p
 type symbol = BA.d
 
-type word = IntWord.t
+type word = Word.t
 type valuation = int -> symbol option
 
 module RegSet = Set.Make(Int)
@@ -121,7 +121,7 @@ let steps (sra: t) (sv: state * valuation) (w: word) =
   let opt_step sra sv a = match sv with
   | None -> None
   | Some qv -> step sra qv a in
-  List.fold_left (opt_step sra) (Some sv) (IntWord.to_list w)
+  List.fold_left (opt_step sra) (Some sv) w
 
 let accepting (sra: t) (s: state) =
   StateSet.mem s sra.final

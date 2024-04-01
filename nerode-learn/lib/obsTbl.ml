@@ -50,7 +50,7 @@ Additionally, [lower_rows] must be the unique set containing all possible
 one-letter extensions of the words/row labels in [upper_rows], minus those already
 in [upper_rows].*)
 type t = {
-  alpha: Alphabet.t;
+  alpha: StringAlphabet.t;
   upper_row_labels : RowLabels.t;
   lower_row_labels : RowLabels.t;
   col_labels : ColLabels.t; (*Columns are maintained in lexicographical order currently*)
@@ -74,7 +74,7 @@ let rows_from_adding_letter alpha row =
   to a given word [row]*)
   List.fold_left (fun acc a -> 
     let new_w = Word.append_letter row a in
-    RowLabels.add (new_w) acc) RowLabels.empty (Alphabet.symbols alpha)
+    RowLabels.add (new_w) acc) RowLabels.empty (StringAlphabet.reps alpha)
 
 (*helper for [add_row] and [add_col]*)
 let add_entries get_entry e_map pre_and_suf (table : t) = 
@@ -255,7 +255,7 @@ let is_same_state (table,(w0:Word.t)) (_,(w1:Word.t)) =
 
 (*[delta a q] Returns the derivative of q wrt a; that is, the state we should
 transition to on a from q.*)
-let delta (letter:Alphabet.symbol) (table,w) = 
+let delta (letter: StringAlphabet.r) (table,w) = 
   let new_row_e = row_entries (Word.append_letter w letter) table in
   let ur_ls_es = up_rows_labels_entries table in
   let (label, _) = 

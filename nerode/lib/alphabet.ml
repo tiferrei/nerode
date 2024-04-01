@@ -6,6 +6,7 @@ module type A = sig
   val compare : r -> r -> int
   val to_list : t -> s list
   val of_list : s list -> t
+  val of_array : s array -> t
   val of_seq : s Seq.t -> t
   val reps : t -> r list
   val iter : (r -> unit) -> t -> unit
@@ -13,7 +14,8 @@ module type A = sig
   val map : (r -> 'a) -> t -> 'a list
   val sym_of_rep : t -> r -> s
   val sym_to_rep : t -> s -> r
-  val rep_to_string : t -> r -> string
+  val rep_to_sexp : r -> Core.Sexp.t
+  val rep_of_sexp : Core.Sexp.t -> r
   val of_json : Yojson.Basic.t -> t
   val to_json : t -> Yojson.Basic.t
   val to_string : t -> string
@@ -51,6 +53,8 @@ module Make (S : Symbol) : A with type s = S.t and type r = int = struct
   let to_list = Array.to_list
 
   let of_list = Array.of_list
+  
+  let of_array = Fun.id
 
   let of_seq = Array.of_seq
 
@@ -70,7 +74,9 @@ module Make (S : Symbol) : A with type s = S.t and type r = int = struct
     let search = Array.find_index mtch t in
     Option.get search
 
-  let rep_to_string t r = (sym_of_rep t r) |> S.to_string
+  let rep_to_sexp = Core.Int.sexp_of_t
+
+  let rep_of_sexp = Core.Int.t_of_sexp
 
   let of_json = function
     | `List lst -> List.map S.of_json lst |> Array.of_list
@@ -108,6 +114,8 @@ module MakeDirect (S : Symbol) : A with type s = S.t and type r = S.t = struct
 
   let of_list = Array.of_list
 
+  let of_array = Fun.id
+
   let of_seq = Array.of_seq
 
   let reps = to_list
@@ -121,6 +129,10 @@ module MakeDirect (S : Symbol) : A with type s = S.t and type r = S.t = struct
   let sym_of_rep t r = r
 
   let sym_to_rep t s = s
+
+  let rep_to_sexp = S.to_sexp
+  
+  let rep_of_sexp = S.of_sexp
 
   let rep_to_string t r = S.to_string r
 

@@ -13,9 +13,9 @@ let rx10 = Rx.of_word w10
 let rx001star = Rx.star rx001
 let rx_empty = Rx.Empty
 
-let dfa_empty = Dfa.of_rx (Alphabet.intalph 2) rx_empty
-let dfa001 = Dfa.of_rx (Alphabet.intalph 2) rx001
-let dfa10 = Dfa.of_rx (Alphabet.intalph 2) rx10
+let dfa_empty = Dfa.of_rx (StringAlphabet.from_int 2) rx_empty
+let dfa001 = Dfa.of_rx (StringAlphabet.from_int 2) rx001
+let dfa10 = Dfa.of_rx (StringAlphabet.from_int 2) rx10
 
 let nfa001 = Dfa.to_nfa dfa001
 let nfa10 = Dfa.to_nfa dfa10

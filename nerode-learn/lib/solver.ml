@@ -24,8 +24,8 @@ module WordKey = struct
   type t = word
   let hash = Hashtbl.hash
   let compare = Stdlib.compare
-  let sexp_of_t = List.sexp_of_t Alphabet.sexp_of_sym
-  let t_of_sexp = List.t_of_sexp Alphabet.sym_of_sexp
+  let sexp_of_t = List.sexp_of_t StringAlphabet.rep_to_sexp
+  let t_of_sexp = List.t_of_sexp StringAlphabet.rep_of_sexp
 end
 module WordHash = Hashtbl.Make(WordKey)
 module WordMap = Map.Make(WordKey)

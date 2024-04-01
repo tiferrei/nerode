@@ -14,7 +14,7 @@ type t = {
   qcount: int ref;
 }
 
-let make (a: Alphabet.t) (p: Rx.t) (n: Rx.t) =
+let make (a: StringAlphabet.t) (p: Rx.t) (n: Rx.t) =
   let pos = Dfa.of_rx a p in
   let neg = Dfa.of_rx a n in
   if Dfa.is_empty (Dfa.intersect pos neg) then

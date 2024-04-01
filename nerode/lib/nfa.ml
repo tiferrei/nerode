@@ -1,4 +1,4 @@
-type symbol = Alphabet.symbol
+type symbol = StringAlphabet.r
 type word = Word.t
 
 module type State = sig
@@ -13,7 +13,7 @@ type nsymbol = Char of symbol | Eps
 
 let to_string alpha nsym =
   match nsym with
-  | Char x -> Alphabet.sym_to_string alpha x
+  | Char x -> StringAlphabet.sym_of_rep alpha x
   | Eps -> "ε"
 
 module type N = sig
@@ -25,8 +25,8 @@ module type N = sig
   module StateMap : Map.S with type key = state
   module CharMap : Map.S with type key = nsymbol
 
-  val mk_nfa : Alphabet.t -> state list -> state list -> (state*nsymbol*state) list -> t
-  val get_alpha : t -> Alphabet.t
+  val mk_nfa : StringAlphabet.t -> state list -> state list -> (state*nsymbol*state) list -> t
+  val get_alpha : t -> StringAlphabet.t
   val get_start : t -> StateSet.t
   val contains_final : t -> StateSet.t -> bool
   val accept : t -> symbol list -> bool 
@@ -47,7 +47,7 @@ module Make (S : State) = struct
     | Eps, Eps -> 0
     | Eps, _ -> -1
     | _, Eps -> 1
-    | Char s1, Char s2 -> Alphabet.compare s1 s2
+    | Char s1, Char s2 -> StringAlphabet.compare s1 s2
   end
 
   module StateSet = S.StateSet
@@ -57,7 +57,7 @@ module Make (S : State) = struct
   type tmap = (StateSet.t CharMap.t) StateMap.t
 
   type t = {
-    alpha : Alphabet.t;   (* Σ *)
+    alpha : StringAlphabet.t;   (* Σ *)
     states : StateSet.t;  (* Q *)
     transition : tmap;    (* δ *)
     start : StateSet.t;   (* q0 *)
@@ -74,7 +74,7 @@ module Make (S : State) = struct
       | Some set -> CharMap.add x (StateSet.add s2 set) m' in
       StateMap.add s1 m'' m) StateMap.empty tr
 
-  let mk_nfa (alpha: Alphabet.t) (start: state list) (final: state list) (tr: (state*nsymbol*state) list) =
+  let mk_nfa (alpha: StringAlphabet.t) (start: state list) (final: state list) (tr: (state*nsymbol*state) list) =
     let s = StateSet.of_list start in
     let f = StateSet.of_list final in
     let found = StateSet.of_list (List.fold_left (fun a (s1,x,s2) -> s1::s2::a) [] tr) in
@@ -140,7 +140,7 @@ module Make (S : State) = struct
     |> contains_final nfa
 
   let print (nfa: t) =
-    Printf.printf "Σ:%s\n%!" (Alphabet.to_string nfa.alpha);
+    Printf.printf "Σ:%s\n%!" (StringAlphabet.to_string nfa.alpha);
 
     Printf.printf "Q: ";
     StateSet.iter (fun s -> S.to_string s |> Printf.printf "%s ") nfa.states;

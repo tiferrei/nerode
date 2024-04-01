@@ -5,5 +5,5 @@ open Nerode
 type word = Word.t
 
 module type HybridLearner = sig
-  val learn : Alphabet.t -> word list -> word list -> Dfa.t
+  val learn : StringAlphabet.t -> word list -> word list -> Dfa.t
 end

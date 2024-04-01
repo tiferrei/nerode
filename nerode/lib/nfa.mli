@@ -2,7 +2,7 @@
     over an abstract type for states. *)
 
 (** Use the Alphabet symbol type. *)
-type symbol = Alphabet.symbol
+type symbol = StringAlphabet.r
 
 (** Use the Alphabet word type. *)
 type word = Word.t
@@ -31,8 +31,8 @@ module type N = sig
   (* Construct an NFA given an alphabet, set of start states, set of final
      states, and a list of transitions. The set of all states is the collection of those
      referenced by the start and final sets and the list of transitions. *)
-  val mk_nfa : Alphabet.t -> state list -> state list -> (state*nsymbol*state) list -> t
-  val get_alpha : t -> Alphabet.t
+  val mk_nfa : StringAlphabet.t -> state list -> state list -> (state*nsymbol*state) list -> t
+  val get_alpha : t -> StringAlphabet.t
   val get_start : t -> StateSet.t
   val contains_final : t -> StateSet.t -> bool
 

@@ -203,7 +203,7 @@ module Make (Teacher : Teacher) (Worklist : Worklist.WorklistSig with type conte
       | counterex -> counterex) None
 
   (**Lstar with blanks main loop*)
-  let rec lstar_blanks (alpha: Alphabet.t) ((wl : Worklist.t), rows_history, teacher, g_cols, e_map) : Dfa.t = 
+  let rec lstar_blanks (alpha: StringAlphabet.t) ((wl : Worklist.t), rows_history, teacher, g_cols, e_map) : Dfa.t = 
     let hd_t = Worklist.head wl in
 
     let tbl, e_map = if CliOpt.global_e () then
@@ -323,7 +323,7 @@ module Make (Teacher : Teacher) (Worklist : Worklist.WorklistSig with type conte
             lstar_blanks alpha (wl', rows_history, teacher, g_cols', e_map'')
   
   (** Entry point of L* with blanks algorithm. *)
-  let learn (alpha : Alphabet.t) teacher = 
+  let learn (alpha : StringAlphabet.t) teacher = 
     let () = reset_metrics () in
     let learnstart = Core_unix.gettimeofday () in
 

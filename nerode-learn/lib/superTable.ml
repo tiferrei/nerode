@@ -151,7 +151,7 @@ module SuperTable : SuperTableSig = struct
     (*accumulating list of possible words from adding a letter (either 0 or 1)
     to a given word [row]*)
     List.fold_left (fun acc a -> 
-      let new_w = Word.append_letter row (Alphabet.sym_of_int a) in
+      let new_w = Word.append_letter row a in
       (new_w)::acc) [] [0;1]
   
   (*helper for [add_row] and [init_epsilon]*)

@@ -7,7 +7,7 @@
 
 open Nerode
 
-type symbol = Alphabet.symbol
+type symbol = StringAlphabet.r
 type word = Word.t
 
 (* ['a t] is a map from a prefix-closed set of words into 'a.
@@ -24,11 +24,11 @@ val empty : 'a t
 val eps : 'a -> 'a t
 
 (** Print a string representation of the trie to stdout. *)
-val print : 'a t -> Alphabet.t -> ('a -> string) -> unit
+val print : 'a t -> StringAlphabet.t -> ('a -> string) -> unit
 
 (** Make a new trie with [[]] as the only internal node, and a leaf for each
     symbol in the given alphabet. *)
-val eps_extend : (word -> 'a) -> Alphabet.t -> 'a t
+val eps_extend : (word -> 'a) -> StringAlphabet.t -> 'a t
 
 (** Look up the given word in the given trie. If the word is not present,
     [failwith "Not found!"]. *)
@@ -52,19 +52,19 @@ val add : (word -> 'a) -> 'a t -> word -> 'a t
 (** Add the prefixes of the given word, extended by each symbol of the alphabet,
     and return the restulting trie. Values are assigned using the provided
     callback function. *)
-val add_extend : (word -> 'a) -> Alphabet.t ->  'a t -> word -> 'a t
+val add_extend : (word -> 'a) -> StringAlphabet.t ->  'a t -> word -> 'a t
 
 (** Construct a trie from the prefixes of a word, extended by each symbol of
     the alphabet. Example: For the alphabet [a =\{a, b\}] and word [w = 'ab']
     [of_word_extend w a query] would add the keys [\{a, b, aa, ab, aba, abb\}]. *)
-val of_word_extend : word -> Alphabet.t -> (word -> 'a) -> 'a t
+val of_word_extend : word -> StringAlphabet.t -> (word -> 'a) -> 'a t
 
 (** Construct a trie from the prefixes of a whole list of words. *)
 val of_wordlist : (word -> 'a) -> word list -> 'a t
 
 (** Construct a trie from the prefixes of a whole list of words, extended by
     each symbol of the alphabet. *)
-val of_wordlist_extend : (word -> 'a) -> Alphabet.t -> word list -> 'a t
+val of_wordlist_extend : (word -> 'a) -> StringAlphabet.t -> word list -> 'a t
 
 (** Return the keys of the trie. *)
 val keys : 'a t -> word list

@@ -1,11 +1,11 @@
 open Nerode
 
-type symbol = Alphabet.symbol
+type symbol = StringAlphabet.r
 type word = Word.t
 
 module SymOrdered = struct
-  type t = Alphabet.symbol
-  let compare a0 a1 = Alphabet.compare a0 a1
+  type t = StringAlphabet.r
+  let compare a0 a1 = StringAlphabet.compare a0 a1
 end
 module SymMap = Map.Make(SymOrdered)
 
@@ -14,13 +14,13 @@ type 'a t = Null | Leaf of 'a | Node of 'a * 'a t SymMap.t
 let empty = Null
 let eps (v: 'a) = Leaf v
 
-let rec print (t: 'a t) (a: Alphabet.t) (to_str: 'a -> string) =
+let rec print (t: 'a t) (a: StringAlphabet.t) (to_str: 'a -> string) =
   let () = match t with
   | Null -> Printf.printf "Null"
   | Leaf v -> Printf.printf "[%s]" (to_str v)
   | Node (v, m) -> Printf.printf "[%s](" (to_str v);
                    SymMap.iter (fun k v -> 
-                     Printf.printf "%s->" (Alphabet.sym_to_string a k);
+                     Printf.printf "%s->" (StringAlphabet.sym_of_rep a k);
                      print v a to_str;
                      Printf.printf " ") m;
                    Printf.printf ")" in
@@ -60,10 +60,10 @@ let rec map (update: word -> 'a -> 'b) (t: 'a t) : 'b t =
                      Some (map update_k v)) m in
                    Node (v', m')
 
-let eps_extend (get: word -> 'a) (alpha: Alphabet.t) =
+let eps_extend (get: word -> 'a) (alpha: StringAlphabet.t) =
   let add_x m x =
     SymMap.add x (Leaf (get [x])) m in
-  let ext = Alphabet.fold add_x SymMap.empty alpha in
+  let ext = StringAlphabet.fold add_x SymMap.empty alpha in
   Node (get [], ext)
 
 let rec of_word (w: word) (get: word -> 'a) : 'a t =
@@ -72,9 +72,9 @@ let rec of_word (w: word) (get: word -> 'a) : 'a t =
   | x::tail -> let getx s = get (x::s) in
                Node (get [], SymMap.singleton x (of_word tail getx))
 
-let rec of_word_extend (w: word) (alpha: Alphabet.t) (get: word -> 'a) : 'a t =
+let rec of_word_extend (w: word) (alpha: StringAlphabet.t) (get: word -> 'a) : 'a t =
   let not_x x =
-    List.filter (fun a -> Alphabet.compare a x <> 0) (Alphabet.symbols alpha) in
+    List.filter (fun a -> StringAlphabet.compare a x <> 0) (StringAlphabet.reps alpha) in
   match w with
   | [] -> eps_extend get alpha
   | x::tail -> let getx s = get (x::s) in
@@ -98,7 +98,7 @@ let rec add (get: word -> 'a) (t: 'a t) (s: word) : 'a t =
                                              let m' = SymMap.add x t'' m in
                                              Node (v, m')
 
-let rec add_extend (get: word -> 'a) (alpha: Alphabet.t) (t: 'a t) (w: word) : 'a t =
+let rec add_extend (get: word -> 'a) (alpha: StringAlphabet.t) (t: 'a t) (w: word) : 'a t =
   match t with
   | Null
   | Leaf _ -> of_word_extend w alpha get
@@ -115,7 +115,7 @@ let rec add_extend (get: word -> 'a) (alpha: Alphabet.t) (t: 'a t) (w: word) : '
 
 let of_wordlist (get: word -> 'a) (s: word list) = List.fold_left (add get) Null s
 
-let of_wordlist_extend (get: word -> 'a) (alpha: Alphabet.t) (s: word list) =
+let of_wordlist_extend (get: word -> 'a) (alpha: StringAlphabet.t) (s: word list) =
   List.fold_left (add_extend get alpha) Null s
 
 let rec keys (t: 'a t): word list =

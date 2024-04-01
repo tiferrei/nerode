@@ -1,6 +1,6 @@
 open Core
 
-type symbol = Alphabet.symbol
+type symbol = StringAlphabet.r
 type word = Word.t
 
 type t =
@@ -22,7 +22,7 @@ let rec compare (t1:t) (t2:t) =
   | Epsilon, Epsilon -> 0
   | Epsilon, _ -> -1
   | _, Epsilon -> 1
-  | Char s1, Char s2 -> Alphabet.compare s1 s2
+  | Char s1, Char s2 -> StringAlphabet.compare s1 s2
   | Char _, _ -> -1
   | _, Char _ -> 1
   | Seq lst1, Seq lst2 -> List.compare compare lst1 lst2
@@ -142,7 +142,7 @@ let intersect_pair (r1:t) (r2:t) : t =
   | Star s1, QMark s2 -> r2
   | Epsilon, Char x
   | Char x, Epsilon -> Empty
-  | Char x, Char y -> if Alphabet.compare x y = 0 then r1 else Empty
+  | Char x, Char y -> if StringAlphabet.compare x y = 0 then r1 else Empty
   | Intersect t1, Intersect t2 -> Intersect (t1 @ t2)
   | Intersect t1, _ -> if List.exists ~f:(fun x -> equiv x r2) t1 then r1 else intersect (r2::t1)
   | _, Intersect t2 -> if List.exists ~f:(fun x -> equiv x r1) t2 then r2 else intersect (r1::t2)
@@ -161,7 +161,7 @@ let difference (r1:t) (r2:t) : t =
   intersect_pair r1 (neg r2)
 
 (* --- Pretty print --- *)
-let to_string (alpha: Alphabet.t) (rx: t) : string =
+let to_string (alpha: StringAlphabet.t) (rx: t) : string =
   let prec (r:t): int =
     match r with
     | Union _ -> 0
@@ -173,7 +173,7 @@ let to_string (alpha: Alphabet.t) (rx: t) : string =
     let s = match r with
     | Empty  -> "{}"
     | Epsilon -> "e"
-    | Char r0 -> Alphabet.sym_to_string alpha r0
+    | Char r0 -> StringAlphabet.sym_of_rep alpha r0
     | Seq r0 -> String.concat ~sep:"" (List.map ~f:(to_string_parent (prec r)) r0)
     | Union r0 -> String.concat ~sep:"+" (List.map ~f:(to_string_parent (prec r)) r0)
     | Star r0 -> (to_string_parent (prec r) r0) ^ "*"
@@ -205,7 +205,7 @@ let rec d (c:symbol) (r0:t) : t =
   | Empty -> r0
   | Epsilon -> Empty
   | Char x ->
-     if Alphabet.compare c x = 0 then Epsilon else Empty
+     if StringAlphabet.compare c x = 0 then Epsilon else Empty
   | Seq (r0::tail) ->
      let r0c_r2 = seq_pair (d c r0) (seq tail) in
      if e r0 then

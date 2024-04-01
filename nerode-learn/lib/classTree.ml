@@ -14,7 +14,7 @@ type t = Node of (Word.t * t * t) | Leaf of Word.t
 let init (rej: Word.t) (acc: Word.t) (suf: Word.t) =
   Node (suf, Leaf rej, Leaf acc)
 
-let print (ct: t) (alpha: Alphabet.t) : unit =
+let print (ct: t) (alpha: StringAlphabet.t) : unit =
   let to_string = Word.to_string alpha in
   let rec printr (ct: t) =
     match ct with
@@ -48,7 +48,7 @@ let rec distinguish (ct: t) oracle (pre1: Word.t) (pre2: Word.t) =
 
 (** [hypothesis ct oracle alpha] computes the hypothesis DFA for [ct], over
     alphabet [alpha], using [oracle] for sifts. *)
-let hypothesis (ct: t) (oracle: Word.t -> bool) (alpha: Alphabet.t)  =
+let hypothesis (ct: t) (oracle: Word.t -> bool) (alpha: StringAlphabet.t)  =
   let eq w1 w2 = Word.compare w1 w2 = 0 in
   let d a w = sift ct oracle (Word.append_letter w a) in
   let e w = oracle w in
@@ -83,7 +83,7 @@ let rec split (ct: t) (oracle) (access: Word.t) (newaccess: Word.t) (dist: Word.
 
 (** [cex_update ct oracle alpha cex] returns a new classification tree based on
     incorporating the counterexample word [cex] *)
-let cex_update (ct: t) (oracle: Word.t -> bool) (alpha: Alphabet.t) (cex: Word.t) =
+let cex_update (ct: t) (oracle: Word.t -> bool) (alpha: StringAlphabet.t) (cex: Word.t) =
   (* Get the hypothesis machine *)
   let hyp = hypothesis ct oracle alpha in
   let get_state w = Dfa.(steps hyp (get_start hyp) w) in

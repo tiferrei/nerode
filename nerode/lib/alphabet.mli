@@ -23,6 +23,9 @@ module type A = sig
   (** [of_list lst] returns an alphabet containing the symbols in the given list. *)
   val of_list : s list -> t
 
+  (** [of_array arr] returns an alphabet containing the symbols in the given array. *)
+  val of_array : s array -> t
+
   (** [of_seq seq] returns an alphabet containing the symbols in the given sequence. *)
   val of_seq : s Seq.t -> t
 
@@ -46,8 +49,11 @@ module type A = sig
   (** Return the representative of the symbol *)
   val sym_to_rep : t -> s -> r
 
-  (** Return the string representation of a representative in the alphabet *)
-  val rep_to_string : t -> r -> string
+  (** Serialize to S-Expression. *)
+  val rep_to_sexp : r -> Core.Sexp.t
+
+  (** Deserialize from S-Expression. *)
+  val rep_of_sexp : Core.Sexp.t -> r
 
   (** Deserialize alphabet from JSON. *)
   val of_json : Yojson.Basic.t -> t

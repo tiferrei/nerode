@@ -1,7 +1,7 @@
 (** A word is just a finite sequence of symbols from an Alphabet *)
 
 (** [t] is the representation type for words, aka w *)
-type t = Alphabet.symbol list
+type t = StringAlphabet.r list
 
 (** [compare w1 w2] returns a negative int if w1 is lexicographically earlier,
 a positive int if later, and 0 if the words are the same.*)
@@ -21,7 +21,7 @@ val suffixes : t -> t list
 
 (** [append_letter l w] returns the word [w] with the letter [l] attached to the back
 E.g., append_letter HELL O = HELLO*)
-val append_letter : t -> Alphabet.symbol -> t
+val append_letter : t -> StringAlphabet.r -> t
 
 (** [concat w1 w2] return the concatenation of [w1] and [w2], i.e. [w1 . w2].
 For example, [concat "one" "two"] is "onetwo" *)
@@ -36,13 +36,13 @@ val to_intlist : t -> int list
 
 (** Convert a word to its string representation (for output). The alphabet's string
     representation for each symbol is used. *)
-val to_string : Alphabet.t -> t -> string
+val to_string : StringAlphabet.t -> t -> string
 
-(** Convert to a list of [Alphabet.symbol]. *)
-val to_symlist : t -> Alphabet.symbol list
+(** Convert to a list of [StringAlphabet.r]. *)
+val to_symlist : t -> StringAlphabet.r list
 
-(** Convert from a list of [Alphabet.symbol]. *)
-val of_symlist : Alphabet.symbol list -> t
+(** Convert from a list of [StringAlphabet.r]. *)
+val of_symlist : StringAlphabet.r list -> t
 
 (** [prefix_of w1 w2] returns [true] if [w1 = w2@suffix] for some (possibly
     empty) word [suffix]. *)
@@ -55,4 +55,4 @@ val resid : t -> t -> t option
     single alphabet symbol, except that the character 'X' is a wildcard.
     That is, for example, for the alphabet \{0, 1\}, [ws_of_strings alphabet
     [["0"; "X"]] converts to the words [[0;0]] and [[0;1]]. *)
-val words_of_strings : Alphabet.t -> string list -> t list
+val words_of_strings : StringAlphabet.t -> string list -> t list

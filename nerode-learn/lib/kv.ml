@@ -15,7 +15,7 @@ module Make (Teacher : Teacher) : ActiveLearner with type teacher = Teacher.t = 
     | Some b -> b
 
 
-  let rec kvloop (alpha: Alphabet.t) (teacher: teacher) (ct: ClassTree.t) : Dfa.t =
+  let rec kvloop (alpha: StringAlphabet.t) (teacher: teacher) (ct: ClassTree.t) : Dfa.t =
     let oracle = query teacher in
     let m = ClassTree.hypothesis ct oracle alpha in
     let () = if CliOpt.verbose () then
@@ -29,7 +29,7 @@ module Make (Teacher : Teacher) : ActiveLearner with type teacher = Teacher.t = 
                   let () = if CliOpt.verbose () then ClassTree.print ct' alpha in
                   kvloop alpha teacher ct'
   
-  let learn (alpha: Alphabet.t) (teacher: teacher) =
+  let learn (alpha: StringAlphabet.t) (teacher: teacher) =
     let accept_empty = query teacher Word.epsilon in
 
     let eq _ = Fun.const true in

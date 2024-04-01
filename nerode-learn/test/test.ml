@@ -16,7 +16,7 @@ let word_tests = [
   Word.(test "concat eps and word" [0;1;2] (concat weps w1 |> to_intlist));
   Word.(test "concat eps and word" [0;1;2] (concat w1 weps |> to_intlist));
   Word.(test "append letter" [0;1;2;0] 
-    (0 |> Alphabet.sym_of_int |> append_letter w1 |> to_intlist));
+    (0 |> append_letter w1 |> to_intlist));
   Word.(test "suffixes for epsilon" [weps] (suffixes weps));
   Word.(test "suffixes for non-empty word" [[3;4;5];[4;5];[5];[]] 
           (w2 |> suffixes |> List.map to_intlist));
@@ -32,7 +32,7 @@ let mk_teacher fn =
 let teacher1 = mk_teacher "tomita_t1"
 let teacher3 = mk_teacher "tomita_t3"
 
-let alpha01 = Alphabet.intalph 2
+let alpha01 = StringAlphabet.from_int 2
 
 let failed_conj = function
   | Some _ -> true
@@ -67,7 +67,7 @@ let query teacher (w : Word.t) : ObsTbl.entry =
   | Some true -> True
   | Some false -> False
 
-let tbl_init1, e_map1 = ObsTbl.init_epsilon (Alphabet.intalph 2) (query teacher1)
+let tbl_init1, e_map1 = ObsTbl.init_epsilon (StringAlphabet.from_int 2) (query teacher1)
 let w_zero = Word.of_intlist [0]
 let w_one = Word.of_intlist [1]
 
